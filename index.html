@@ -5,46 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ViBot Multi</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    #imageResult {
-      max-width: 100%;
-      margin-top: 20px;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 15px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      margin: 10px 0;
-    }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    textarea { width: 100%; height: 100px; margin: 10px 0; }
+    button { padding: 10px 15px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #videoResult, #imageResult { max-width: 100%; margin-top: 20px; display: none; }
+    .tab { display: none; }
+    .tab.active { display: block; }
   </style>
 </head>
 <body>
-  <h1>Gerador de Imagens</h1>
-  <textarea id="imagePrompt" placeholder="Descreva a imagem..."></textarea>
-  <button onclick="generateImage()">Gerar Imagem</button>
-  <img id="imageResult" style="display: none;">
+  <h1>ViBot Multi</h1>
   
+  <!-- Abas -->
+  <div>
+    <button onclick="showTab('video')">Vídeo</button>
+    <button onclick="showTab('text')">Texto</button>
+    <button onclick="showTab('image')">Imagem</button>
+  </div>
+
+  <!-- Tab Vídeo -->
+  <div id="videoTab" class="tab active">
+    <h2>Gerador de Vídeo (Veo 3.0)</h2>
+    <textarea id="videoPrompt" placeholder="Ex.: Um cachorro brincando na praia"></textarea>
+    <button onclick="generateVideo()">Gerar Vídeo</button>
+    <video id="videoResult" controls></video>
+  </div>
+
+  <!-- Tab Texto -->
+  <div id="textTab" class="tab">
+    <h2>Gerador de Texto (Gemini 2.5)</h2>
+    <textarea id="textPrompt" placeholder="Ex.: Escreva um poema sobre o mar"></textarea>
+    <button onclick="generateText()">Gerar Texto</button>
+    <div id="textResult" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- Tab Imagem -->
+  <div id="imageTab" class="tab">
+    <h2>Gerador de Imagem (Gemini Flash)</h2>
+    <textarea id="imagePrompt" placeholder="Ex.: Uma cidade futurista à noite"></textarea>
+    <button onclick="generateImage()">Gerar Imagem</button>
+    <img id="imageResult">
+  </div>
+
   <script>
-    // Função do exemplo anterior
+    // Controle de abas
+    function showTab(tabName) {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+    }
+
+    // Gerar Vídeo
+    async function generateVideo() {
+      const prompt = document.getElementById("videoPrompt").value;
+      const videoElement = document.getElementById("videoResult");
+      
+      try {
+        const response = await fetch('/api/generateVideo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        videoElement.src = data.videoUrl;
+        videoElement.style.display = "block";
+      } catch (error) {
+        alert("Erro ao gerar vídeo: " + error.message);
+      }
+    }
+
+    // Gerar Texto
+    async function generateText() {
+      const prompt = document.getElementById("textPrompt").value;
+      
+      try {
+        const response = await fetch('/api/generateText', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        document.getElementById("textResult").innerHTML = data.text;
+      } catch (error) {
+        alert("Erro ao gerar texto: " + error.message);
+      }
+    }
+
+    // Gerar Imagem (já fornecido anteriormente)
     async function generateImage() {
       const prompt = document.getElementById("imagePrompt").value;
       const imgElement = document.getElementById("imageResult");
-      
-      imgElement.style.display = "none";
-      document.body.classList.add("loading");
       
       try {
         const response = await fetch('/api/generateImage', {
@@ -52,14 +103,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt })
         });
-        
         const data = await response.json();
         imgElement.src = data.imageUrl;
         imgElement.style.display = "block";
       } catch (error) {
-        alert("Erro: " + error.message);
-      } finally {
-        document.body.classList.remove("loading");
+        alert("Erro ao gerar imagem: " + error.message);
       }
     }
   </script>
