@@ -4,16 +4,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ViBot Multi</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    #imageResult {
+      max-width: 100%;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Gerador Multimídia</h1>
-    <textarea id="prompt" placeholder="Descreva seu vídeo..."></textarea>
-    <button id="generate-btn">Gerar Vídeo</button>
-    <div id="result"></div>
-  </div>
+  <h1>Gerador de Imagens</h1>
+  <textarea id="imagePrompt" placeholder="Descreva a imagem..."></textarea>
+  <button onclick="generateImage()">Gerar Imagem</button>
+  <img id="imageResult" style="display: none;">
   
-  <script src="/js/script.js"></script>
+  <script>
+    // Função do exemplo anterior
+    async function generateImage() {
+      const prompt = document.getElementById("imagePrompt").value;
+      const imgElement = document.getElementById("imageResult");
+      
+      imgElement.style.display = "none";
+      document.body.classList.add("loading");
+      
+      try {
+        const response = await fetch('/api/generateImage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        
+        const data = await response.json();
+        imgElement.src = data.imageUrl;
+        imgElement.style.display = "block";
+      } catch (error) {
+        alert("Erro: " + error.message);
+      } finally {
+        document.body.classList.remove("loading");
+      }
+    }
+  </script>
 </body>
 </html>
